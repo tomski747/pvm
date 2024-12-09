@@ -14,8 +14,4 @@ PVM is a version manager for Pulumi CLI that allows you to install and switch be
 
 ## Installation
 
-### Prerequisites
-
-- Go 1.21 or later
-
-### Install from source
+### Using Homebrew (macOS and Linux)
