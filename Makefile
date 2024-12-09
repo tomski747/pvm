@@ -44,7 +44,7 @@ coverage: ## Run tests with coverage
 lint: ## Run linters
 	@echo "Running linters..."
 	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run --config .golangci.yml; \
+		golangci-lint run; \
 	else \
 		echo "golangci-lint is not installed. Run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
 		exit 1; \
