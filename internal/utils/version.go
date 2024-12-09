@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -131,4 +133,22 @@ func InstallVersion(version string) error {
 	}
 
 	return nil
+}
+
+func GetLatestVersion() (string, error) {
+	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases/latest")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	
+	var release struct {
+		TagName string `json:"tag_name"`
+	}
+	
+	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
+		return "", err
+	}
+	
+	return strings.TrimPrefix(release.TagName, "v"), nil
 } 
