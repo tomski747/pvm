@@ -1,0 +1,18 @@
+# Build
+/bin/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Test
+*.test
+*.out
+coverage.html
+
+# Debug
+debug
+__debug_bin 
