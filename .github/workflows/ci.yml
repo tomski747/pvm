@@ -23,7 +23,9 @@ jobs:
         run: go mod download
 
       - name: Run linters
-        run: make lint
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          make lint
 
       - name: Run tests
         run: make test
