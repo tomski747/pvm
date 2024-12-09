@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/tomski747/pvm/internal/utils"
 )
 
 var rootCmd = &cobra.Command{
@@ -26,7 +27,9 @@ Examples:
   pvm list              List all available versions
   pvm current           Show current version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -35,9 +38,18 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.AddCommand(installCmd)
+	rootCmd.PersistentFlags().Bool("no-color", false, "Disable color output")
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		noColor, _ := cmd.Flags().GetBool("no-color")
+		if noColor {
+			utils.DisableColors()
+		}
+	}
+
+	rootCmd.AddCommand(installCmd())
 	rootCmd.AddCommand(useCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(currentCmd)
 	rootCmd.AddCommand(helpCmd)
-} 
+	rootCmd.AddCommand(removeCmd)
+}

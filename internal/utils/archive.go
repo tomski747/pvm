@@ -109,7 +109,9 @@ func extractZip(r io.Reader, destDir string) error {
 		path := filepath.Join(destDir, relPath)
 
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(path, 0755)
+			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+				return fmt.Errorf("failed to create directory: %v", err)
+			}
 			continue
 		}
 
@@ -140,4 +142,4 @@ func extractZip(r io.Reader, destDir string) error {
 		}
 	}
 	return nil
-} 
+}

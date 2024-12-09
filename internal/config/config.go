@@ -73,4 +73,4 @@ func GetBinPath() string {
 // GetPlatformInfo returns the current OS and architecture
 func GetPlatformInfo() (string, string) {
 	return runtime.GOOS, runtime.GOARCH
-} 
+}

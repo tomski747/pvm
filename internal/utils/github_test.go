@@ -17,7 +17,9 @@ func TestFetchFromGitHub(t *testing.T) {
 			{TagName: "v3.78.1"},
 			{TagName: "v3.78.0"},
 		}
-		json.NewEncoder(w).Encode(releases)
+		if err := json.NewEncoder(w).Encode(releases); err != nil {
+			t.Errorf("Failed to encode releases: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -42,4 +44,4 @@ func TestFetchFromGitHub(t *testing.T) {
 			t.Errorf("Expected version %s, got %s", expectedVersions[i], version)
 		}
 	}
-} 
+}

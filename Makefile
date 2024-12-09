@@ -55,6 +55,10 @@ install: build ## Install binary to GOPATH/bin
 	@go install $(MAIN_PACKAGE)
 	@echo "Installed $(BINARY_NAME) to $(GOPATH)/bin/$(BINARY_NAME)"
 
+run: ## Run the binary with optional arguments
+	@echo "Running..."
+	@$(BUILD_DIR)/$(BINARY_NAME) $(ARGS)
+
 help: ## Display this help screen
 	@echo "Available commands:"
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

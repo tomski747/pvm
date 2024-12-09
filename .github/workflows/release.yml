@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+      
+      - name: Get tag
+        id: get_tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Build Binaries
+        env:
+          TAG: ${{ steps.get_tag.outputs.tag }}
+        run: |
+          platforms=("linux/amd64" "linux/arm64" "darwin/amd64" "darwin/arm64" "windows/amd64" "windows/arm64")
+          for platform in "${platforms[@]}"; do
+            OS="${platform%/*}"
+            ARCH="${platform#*/}"
+            output_name="pvm"
+            if [ "$OS" = "windows" ]; then
+              output_name="pvm.exe"
+            fi
+            echo "Building for $OS/$ARCH..."
+            GOOS=$OS GOARCH=$ARCH go build -o "dist/pvm_${OS}_${ARCH}/$output_name" ./cmd/pvm
+            cd dist/pvm_${OS}_${ARCH}
+            if [ "$OS" = "windows" ]; then
+              zip "../../${TAG}-${OS}-${ARCH}.zip" "$output_name"
+            else
+              tar czf "../../${TAG}-${OS}-${ARCH}.tar.gz" "$output_name"
+            fi
+            cd ../..
+          done
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ steps.get_tag.outputs.tag }}-linux-amd64.tar.gz
+            ${{ steps.get_tag.outputs.tag }}-linux-arm64.tar.gz
+            ${{ steps.get_tag.outputs.tag }}-darwin-amd64.tar.gz
+            ${{ steps.get_tag.outputs.tag }}-darwin-arm64.tar.gz
+            ${{ steps.get_tag.outputs.tag }}-windows-amd64.zip
+            ${{ steps.get_tag.outputs.tag }}-windows-arm64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

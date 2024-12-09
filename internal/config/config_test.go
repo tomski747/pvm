@@ -67,4 +67,4 @@ func TestGetPlatformInfo(t *testing.T) {
 	if arch == "" {
 		t.Error("GetPlatformInfo() returned empty architecture")
 	}
-} 
+}

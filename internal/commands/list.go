@@ -8,37 +8,61 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List available Pulumi versions",
-	Long:  `List all available Pulumi versions from GitHub releases and show which ones are installed.`,
+	Short: "List Pulumi versions",
+	Long:  "List installed Pulumi versions. Use --all to show all available versions.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		versions, err := utils.FetchGitHubReleases()
-		if err != nil {
-			return fmt.Errorf("failed to fetch versions: %v", err)
-		}
+		showAll, _ := cmd.Flags().GetBool("all")
 
 		installed := utils.GetInstalledVersions()
-		current, _ := utils.GetCurrentVersion()
+		current, err := utils.GetCurrentVersion()
+		if err != nil {
+			return fmt.Errorf("failed to get current version: %w", err)
+		}
 
-		fmt.Println("Available Pulumi versions:")
-		for _, version := range versions {
-			indicators := []string{}
-			if installed[version] {
-				indicators = append(indicators, "*")
-			}
-			if version == current {
-				indicators = append(indicators, "(current)")
+		if showAll {
+			available, err := utils.GetAvailableVersions()
+			if err != nil {
+				return fmt.Errorf("failed to fetch available versions: %w", err)
 			}
 
-			if len(indicators) > 0 {
-				fmt.Printf("  %s %s\n", version, indicators)
-			} else {
-				fmt.Printf("  %s\n", version)
+			fmt.Println(utils.Info("Available versions:"))
+			for _, version := range available {
+				prefix := "  "
+				if installed[version] {
+					prefix = utils.Success("* ")
+				}
+				if version == current {
+					prefix = utils.Current("→ ")
+				}
+				fmt.Printf("%s%s\n", prefix, version)
+			}
+		} else {
+			if len(installed) == 0 {
+				fmt.Println(utils.Warning("No versions installed. Use 'pvm install <version>' to install one."))
+				fmt.Println(utils.Info("Run 'pvm list --all' to see all available versions."))
+				return nil
+			}
+
+			fmt.Println(utils.Info("Installed versions:"))
+			for version := range installed {
+				prefix := "  "
+				if version == current {
+					prefix = utils.Current("→ ")
+				}
+				fmt.Printf("%s%s\n", prefix, version)
 			}
 		}
 
-		fmt.Println("\nLegend:")
-		fmt.Println("  * downloaded")
-		fmt.Println("  (current) currently active version")
+		fmt.Println(utils.Info("\nLegend:"))
+		fmt.Println(utils.Current("  →  current"))
+		if showAll {
+			fmt.Println(utils.Success("  *  installed"))
+		}
+
 		return nil
 	},
-} 
+}
+
+func init() {
+	listCmd.Flags().Bool("all", false, "Show all available versions")
+}
