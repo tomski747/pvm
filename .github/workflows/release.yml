@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -13,17 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: "1.21"
           cache: true
-      
+
       - name: Get tag
         id: get_tag
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
+
       - name: Build Binaries
         env:
           TAG: ${{ steps.get_tag.outputs.tag }}
@@ -37,7 +37,10 @@ jobs:
               output_name="pvm.exe"
             fi
             echo "Building for $OS/$ARCH..."
-            GOOS=$OS GOARCH=$ARCH go build -o "dist/pvm_${OS}_${ARCH}/$output_name" ./cmd/pvm
+            GOOS=$OS GOARCH=$ARCH go build \
+              -ldflags "-X github.com/tomski747/pvm/internal/config.Version=${TAG}" \
+              -o "dist/pvm_${OS}_${ARCH}/$output_name" \
+              ./cmd/pvm
             cd dist/pvm_${OS}_${ARCH}
             if [ "$OS" = "windows" ]; then
               zip "../../${TAG}-${OS}-${ARCH}.zip" "$output_name"
