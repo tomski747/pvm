@@ -127,6 +127,12 @@ func installVersion(version string) error {
 
 	// Determine download URL based on platform
 	var downloadURL string
+
+	// Convert amd64 to x64
+	if arch == "amd64" {
+		arch = "x64"
+	}
+
 	if goos == "windows" {
 		downloadURL = fmt.Sprintf(config.GithubZipURL, version, version, goos, arch)
 	} else {
