@@ -31,4 +31,16 @@ func DisableColors() {
 func EnableColors() {
 	useColor = true
 	color.NoColor = false
+}
+
+func IsColorEnabled() bool {
+	return useColor && !color.NoColor
+}
+
+func GetUseColor() bool {
+	return useColor
+}
+
+func SetUseColor(enabled bool) {
+	useColor = enabled
 } 

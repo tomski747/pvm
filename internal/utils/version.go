@@ -11,6 +11,13 @@ import (
 	"github.com/tomski747/pvm/internal/config"
 )
 
+// Exported variables for testing
+var (
+	InstallVersion = installVersion
+	UseVersion = useVersion
+	GetLatestVersion = getLatestVersion
+)
+
 // GetInstalledVersions returns a map of installed versions
 func GetInstalledVersions() map[string]bool {
 	installed := make(map[string]bool)
@@ -54,7 +61,7 @@ func GetCurrentVersion() (string, error) {
 }
 
 // UseVersion switches to a specific version of Pulumi
-func UseVersion(version string) error {
+func useVersion(version string) error {
 	// Verify version is installed
 	versionsPath := config.GetVersionsPath()
 	versionDir := filepath.Join(versionsPath, version)
@@ -106,7 +113,7 @@ func UseVersion(version string) error {
 }
 
 // InstallVersion installs a specific version of Pulumi
-func InstallVersion(version string) error {
+func installVersion(version string) error {
 	versionsPath := config.GetVersionsPath()
 	if err := os.MkdirAll(versionsPath, 0755); err != nil {
 		return fmt.Errorf("failed to create versions directory: %v", err)
@@ -135,7 +142,7 @@ func InstallVersion(version string) error {
 	return nil
 }
 
-func GetLatestVersion() (string, error) {
+func getLatestVersion() (string, error) {
 	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases/latest")
 	if err != nil {
 		return "", err

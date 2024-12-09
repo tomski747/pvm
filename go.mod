@@ -3,8 +3,8 @@ module github.com/tomski747/pvm
 go 1.21
 
 require (
-	github.com/spf13/cobra v1.8.1
 	github.com/fatih/color v1.16.0
+	github.com/spf13/cobra v1.8.1
 )
 
 require (
