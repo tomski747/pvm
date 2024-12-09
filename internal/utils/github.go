@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,10 +22,13 @@ type githubRelease struct {
 var githubAPIURL = "https://api.github.com/repos/pulumi/pulumi/releases"
 
 // FetchGitHubReleases fetches all available Pulumi versions from GitHub
-func FetchGitHubReleases() ([]string, error) {
-	// Try cache first
-	if versions, err := readCache(); err == nil {
-		return versions, nil
+func FetchGitHubReleases(refresh bool) ([]string, error) {
+	// If refresh is true, skip cache and fetch directly from GitHub
+	if !refresh {
+		// Try cache first
+		if versions, err := readCache(); err == nil {
+			return versions, nil
+		}
 	}
 
 	// Fetch from GitHub
@@ -64,6 +69,21 @@ func saveCache(versions []string) error {
 		Versions:  versions,
 		Timestamp: time.Now(),
 	}
+
+	// Sort versions in descending order using semver comparison
+	sort.Slice(cache.Versions, func(i, j int) bool {
+		v1Parts := strings.Split(cache.Versions[i], ".")
+		v2Parts := strings.Split(cache.Versions[j], ".")
+		
+		for k := 0; k < len(v1Parts) && k < len(v2Parts); k++ {
+			n1, _ := strconv.Atoi(v1Parts[k])
+			n2, _ := strconv.Atoi(v2Parts[k])
+			if n1 != n2 {
+				return n1 > n2
+			}
+		}
+		return len(v1Parts) > len(v2Parts)
+	})
 
 	data, err := json.Marshal(cache)
 	if err != nil {

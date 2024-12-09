@@ -194,25 +194,6 @@ func RemoveVersion(version string) error {
 }
 
 // GetAvailableVersions fetches all available Pulumi versions from GitHub
-func GetAvailableVersions() ([]string, error) {
-	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var releases []struct {
-		TagName string `json:"tag_name"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
-		return nil, err
-	}
-
-	versions := make([]string, len(releases))
-	for i, release := range releases {
-		versions[i] = strings.TrimPrefix(release.TagName, "v")
-	}
-
-	return versions, nil
+func GetAvailableVersions(refresh bool) ([]string, error) {
+	return FetchGitHubReleases(refresh)
 }
