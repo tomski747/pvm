@@ -80,7 +80,9 @@ func TestGetLatestVersion(t *testing.T) {
 		}{
 			TagName: "v3.78.1",
 		}
-		json.NewEncoder(w).Encode(release)
+		if err := json.NewEncoder(w).Encode(release); err != nil {
+			t.Errorf("Failed to encode release: %v", err)
+		}
 	}))
 	defer server.Close()
 

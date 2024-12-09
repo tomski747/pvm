@@ -27,7 +27,9 @@ Examples:
   pvm list              List all available versions
   pvm current           Show current version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			panic(err)
+		}
 	},
 }
 
