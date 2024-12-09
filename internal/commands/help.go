@@ -12,7 +12,7 @@ Simply type pvm help [path to command] for full details.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
-} 
+}
 
 var helpText = `PVM - Pulumi Version Manager
 
@@ -40,4 +40,4 @@ Examples:
   pvm current
 
 For more information, visit: https://github.com/tomski747/pvm
-` 
+`

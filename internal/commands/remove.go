@@ -13,12 +13,12 @@ var removeCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		version := args[0]
-		
+
 		if err := utils.RemoveVersion(version); err != nil {
 			return fmt.Errorf("failed to remove version %s: %w", version, err)
 		}
-		
+
 		fmt.Printf("Successfully removed Pulumi %s\n", version)
 		return nil
 	},
-} 
+}

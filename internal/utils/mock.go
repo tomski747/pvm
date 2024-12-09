@@ -6,15 +6,15 @@ import (
 
 // Mock function types
 type (
-	mockInstallVersionFunc func(version string) error
-	mockUseVersionFunc    func(version string) error
+	mockInstallVersionFunc   func(version string) error
+	mockUseVersionFunc       func(version string) error
 	mockGetLatestVersionFunc func() (string, error)
 )
 
 // Mock function variables
 var (
-	mockInstallVersionFn mockInstallVersionFunc
-	mockUseVersionFn    mockUseVersionFunc  
+	mockInstallVersionFn   mockInstallVersionFunc
+	mockUseVersionFn       mockUseVersionFunc
 	mockGetLatestVersionFn mockGetLatestVersionFunc
 )
 

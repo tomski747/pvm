@@ -43,4 +43,4 @@ func GetUseColor() bool {
 
 func SetUseColor(enabled bool) {
 	useColor = enabled
-} 
+}

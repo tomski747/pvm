@@ -13,8 +13,8 @@ import (
 
 // Exported variables for testing
 var (
-	InstallVersion = installVersion
-	UseVersion = useVersion
+	InstallVersion   = installVersion
+	UseVersion       = useVersion
 	GetLatestVersion = getLatestVersion
 )
 
@@ -148,15 +148,15 @@ func getLatestVersion() (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	
+
 	var release struct {
 		TagName string `json:"tag_name"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
 		return "", err
 	}
-	
+
 	return strings.TrimPrefix(release.TagName, "v"), nil
 }
 
@@ -173,7 +173,7 @@ func RemoveVersion(version string) error {
 
 	versionsPath := config.GetVersionsPath()
 	versionDir := filepath.Join(versionsPath, version)
-	
+
 	// Check if version exists
 	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
 		return fmt.Errorf("version %s is not installed", version)
@@ -194,19 +194,19 @@ func GetAvailableVersions() ([]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	var releases []struct {
 		TagName string `json:"tag_name"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
 		return nil, err
 	}
-	
+
 	versions := make([]string, len(releases))
 	for i, release := range releases {
 		versions[i] = strings.TrimPrefix(release.TagName, "v")
 	}
-	
+
 	return versions, nil
-} 
+}

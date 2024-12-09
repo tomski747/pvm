@@ -15,7 +15,7 @@ func installCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			version := args[0]
 			useAfterInstall, _ := cmd.Flags().GetBool("use")
-			
+
 			if version == "latest" {
 				latest, err := utils.GetLatestVersion()
 				if err != nil {
@@ -23,13 +23,13 @@ func installCmd() *cobra.Command {
 				}
 				version = latest
 			}
-			
+
 			if err := utils.InstallVersion(version); err != nil {
 				return err
 			}
-			
+
 			fmt.Printf("%s %s\n", utils.Success("Successfully installed Pulumi"), version)
-			
+
 			if useAfterInstall {
 				if err := utils.UseVersion(version); err != nil {
 					return fmt.Errorf("failed to switch to version %s: %w", version, err)
@@ -38,11 +38,11 @@ func installCmd() *cobra.Command {
 			} else {
 				fmt.Printf("\n%s pvm use %s\n", utils.Info("To use this version, run:"), version)
 			}
-			
+
 			return nil
 		},
 	}
-	
+
 	cmd.Flags().Bool("use", false, "Switch to this version after installing")
 	return cmd
-} 
+}

@@ -24,4 +24,4 @@ var currentCmd = &cobra.Command{
 		fmt.Printf("Current Pulumi version: %s\n", version)
 		return nil
 	},
-} 
+}

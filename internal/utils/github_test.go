@@ -42,4 +42,4 @@ func TestFetchFromGitHub(t *testing.T) {
 			t.Errorf("Expected version %s, got %s", expectedVersions[i], version)
 		}
 	}
-} 
+}

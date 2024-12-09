@@ -50,4 +50,4 @@ func init() {
 	rootCmd.AddCommand(currentCmd)
 	rootCmd.AddCommand(helpCmd)
 	rootCmd.AddCommand(removeCmd)
-} 
+}

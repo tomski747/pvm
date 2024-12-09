@@ -13,7 +13,7 @@ var useCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		version := args[0]
-		
+
 		if version == "latest" {
 			latest, err := utils.GetLatestVersion()
 			if err != nil {
@@ -21,12 +21,12 @@ var useCmd = &cobra.Command{
 			}
 			version = latest
 		}
-		
+
 		if err := utils.UseVersion(version); err != nil {
 			return fmt.Errorf("failed to switch to version %s: %w", version, err)
 		}
-		
+
 		fmt.Printf("%s %s\n", utils.Success("Switched to Pulumi"), version)
 		return nil
 	},
-} 
+}

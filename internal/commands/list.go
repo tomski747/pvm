@@ -12,7 +12,7 @@ var listCmd = &cobra.Command{
 	Long:  "List installed Pulumi versions. Use --all to show all available versions.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		showAll, _ := cmd.Flags().GetBool("all")
-		
+
 		installed := utils.GetInstalledVersions()
 		current, err := utils.GetCurrentVersion()
 		if err != nil {
@@ -58,11 +58,11 @@ var listCmd = &cobra.Command{
 		if showAll {
 			fmt.Println(utils.Success("  *  installed"))
 		}
-		
+
 		return nil
 	},
 }
 
 func init() {
 	listCmd.Flags().Bool("all", false, "Show all available versions")
-} 
+}

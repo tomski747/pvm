@@ -124,4 +124,4 @@ func fetchFromGitHub() ([]string, error) {
 	}
 
 	return versions, nil
-} 
+}
