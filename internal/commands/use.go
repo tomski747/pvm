@@ -22,11 +22,16 @@ var useCmd = &cobra.Command{
 			version = latest
 		}
 
-		if err := utils.UseVersion(version); err != nil {
-			return fmt.Errorf("failed to switch to version %s: %w", version, err)
+		resolvedVersion, err := utils.ResolveVersion(version)
+		if err != nil {
+			return fmt.Errorf("failed to resolve version: %w", err)
 		}
 
-		fmt.Printf("%s %s\n", utils.Success("Switched to Pulumi"), version)
+		if err := utils.UseVersion(resolvedVersion); err != nil {
+			return fmt.Errorf("failed to switch to version %s: %w", resolvedVersion, err)
+		}
+
+		fmt.Printf("%s %s\n", utils.Success("Switched to Pulumi"), resolvedVersion)
 		return nil
 	},
 }

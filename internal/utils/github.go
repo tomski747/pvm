@@ -145,3 +145,53 @@ func fetchFromGitHub() ([]string, error) {
 
 	return versions, nil
 }
+
+// FindLatestMatchingVersion finds the latest version that matches the given prefix
+func FindLatestMatchingVersion(prefix string, versions []string) (string, error) {
+	if prefix == "" {
+		return "", fmt.Errorf("version prefix cannot be empty")
+	}
+
+	// Normalize prefix to ensure it has dots
+	parts := strings.Split(prefix, ".")
+	if len(parts) == 1 {
+		// For single number like "3", match any version starting with "3."
+		prefix = parts[0]
+	}
+
+	var matchingVersions []string
+	for _, version := range versions {
+		if len(parts) == 1 {
+			// For single number like "3", match any version starting with "3."
+			if strings.HasPrefix(version+".", parts[0]+".") {
+				matchingVersions = append(matchingVersions, version)
+			}
+		} else {
+			// For partial versions like "3.1", match exact prefix
+			if strings.HasPrefix(version+".", prefix+".") {
+				matchingVersions = append(matchingVersions, version)
+			}
+		}
+	}
+
+	if len(matchingVersions) == 0 {
+		return "", fmt.Errorf("no versions found matching prefix %s", prefix)
+	}
+
+	// Sort versions using semver comparison
+	sort.Slice(matchingVersions, func(i, j int) bool {
+		v1Parts := strings.Split(matchingVersions[i], ".")
+		v2Parts := strings.Split(matchingVersions[j], ".")
+		
+		for k := 0; k < len(v1Parts) && k < len(v2Parts); k++ {
+			n1, _ := strconv.Atoi(v1Parts[k])
+			n2, _ := strconv.Atoi(v2Parts[k])
+			if n1 != n2 {
+				return n1 > n2
+			}
+		}
+		return len(v1Parts) > len(v2Parts)
+	})
+
+	return matchingVersions[0], nil
+}
