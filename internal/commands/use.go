@@ -26,7 +26,7 @@ var useCmd = &cobra.Command{
 			return fmt.Errorf("failed to switch to version %s: %w", version, err)
 		}
 		
-		fmt.Printf("Switched to Pulumi %s\n", version)
+		fmt.Printf("%s %s\n", utils.Success("Switched to Pulumi"), version)
 		return nil
 	},
 } 

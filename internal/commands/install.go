@@ -28,15 +28,15 @@ func installCmd() *cobra.Command {
 				return err
 			}
 			
-			fmt.Printf("Successfully installed Pulumi %s\n", version)
+			fmt.Printf("%s %s\n", utils.Success("Successfully installed Pulumi"), version)
 			
 			if useAfterInstall {
 				if err := utils.UseVersion(version); err != nil {
 					return fmt.Errorf("failed to switch to version %s: %w", version, err)
 				}
-				fmt.Printf("Switched to Pulumi %s\n", version)
+				fmt.Printf("%s %s\n", utils.Success("Switched to Pulumi"), version)
 			} else {
-				fmt.Printf("\nTo use this version, run: pvm use %s\n", version)
+				fmt.Printf("\n%s pvm use %s\n", utils.Info("To use this version, run:"), version)
 			}
 			
 			return nil

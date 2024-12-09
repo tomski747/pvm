@@ -151,4 +151,55 @@ func GetLatestVersion() (string, error) {
 	}
 	
 	return strings.TrimPrefix(release.TagName, "v"), nil
+}
+
+// RemoveVersion removes a specific version of Pulumi
+func RemoveVersion(version string) error {
+	// Check if version is currently in use
+	current, err := GetCurrentVersion()
+	if err != nil {
+		return fmt.Errorf("failed to check current version: %w", err)
+	}
+	if current == version {
+		return fmt.Errorf("cannot remove version %s: currently in use", version)
+	}
+
+	versionsPath := config.GetVersionsPath()
+	versionDir := filepath.Join(versionsPath, version)
+	
+	// Check if version exists
+	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
+		return fmt.Errorf("version %s is not installed", version)
+	}
+
+	// Remove the version directory
+	if err := os.RemoveAll(versionDir); err != nil {
+		return fmt.Errorf("failed to remove version %s: %w", version, err)
+	}
+
+	return nil
+}
+
+// GetAvailableVersions fetches all available Pulumi versions from GitHub
+func GetAvailableVersions() ([]string, error) {
+	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	
+	var releases []struct {
+		TagName string `json:"tag_name"`
+	}
+	
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
+		return nil, err
+	}
+	
+	versions := make([]string, len(releases))
+	for i, release := range releases {
+		versions[i] = strings.TrimPrefix(release.TagName, "v")
+	}
+	
+	return versions, nil
 } 
