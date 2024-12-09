@@ -62,11 +62,16 @@ func GetCurrentVersion() (string, error) {
 
 // UseVersion switches to a specific version of Pulumi
 func useVersion(version string) error {
+	resolvedVersion, err := ResolveVersion(version)
+	if err != nil {
+		return err
+	}
+
 	// Verify version is installed
 	versionsPath := config.GetVersionsPath()
-	versionDir := filepath.Join(versionsPath, version)
+	versionDir := filepath.Join(versionsPath, resolvedVersion)
 	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
-		return fmt.Errorf("version %s is not installed", version)
+		return fmt.Errorf("version %s is not installed", resolvedVersion)
 	}
 
 	binPath := config.GetBinPath()
@@ -114,23 +119,34 @@ func useVersion(version string) error {
 
 // InstallVersion installs a specific version of Pulumi
 func installVersion(version string) error {
+	resolvedVersion, err := ResolveVersion(version)
+	if err != nil {
+		return err
+	}
+
 	versionsPath := config.GetVersionsPath()
 	if err := os.MkdirAll(versionsPath, 0755); err != nil {
 		return fmt.Errorf("failed to create versions directory: %v", err)
 	}
 
 	goos, arch := config.GetPlatformInfo()
-	versionDir := filepath.Join(versionsPath, version)
+	versionDir := filepath.Join(versionsPath, resolvedVersion)
 	if err := os.MkdirAll(versionDir, 0755); err != nil {
 		return fmt.Errorf("failed to create version directory: %v", err)
 	}
 
 	// Determine download URL based on platform
 	var downloadURL string
+
+	// Convert amd64 to x64
+	if arch == "amd64" {
+		arch = "x64"
+	}
+
 	if goos == "windows" {
-		downloadURL = fmt.Sprintf(config.GithubZipURL, version, version, goos, arch)
+		downloadURL = fmt.Sprintf(config.GithubZipURL, resolvedVersion, resolvedVersion, goos, arch)
 	} else {
-		downloadURL = fmt.Sprintf(config.GithubReleaseURL, version, version, goos, arch)
+		downloadURL = fmt.Sprintf(config.GithubReleaseURL, resolvedVersion, resolvedVersion, goos, arch)
 	}
 
 	// Download and extract
@@ -188,25 +204,29 @@ func RemoveVersion(version string) error {
 }
 
 // GetAvailableVersions fetches all available Pulumi versions from GitHub
-func GetAvailableVersions() ([]string, error) {
-	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases")
+func GetAvailableVersions(refresh bool) ([]string, error) {
+	return FetchGitHubReleases(refresh)
+}
+
+// ResolveVersion takes a version or version prefix and returns the full version
+func ResolveVersion(versionOrPrefix string) (string, error) {
+	versions, err := FetchGitHubReleases(false)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var releases []struct {
-		TagName string `json:"tag_name"`
+		return "", fmt.Errorf("failed to fetch versions: %v", err)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
-		return nil, err
+	// If it's an exact version, return it
+	for _, v := range versions {
+		if v == versionOrPrefix {
+			return versionOrPrefix, nil
+		}
 	}
 
-	versions := make([]string, len(releases))
-	for i, release := range releases {
-		versions[i] = strings.TrimPrefix(release.TagName, "v")
+	// Try to find the latest matching version
+	version, err := FindLatestMatchingVersion(versionOrPrefix, versions)
+	if err != nil {
+		return "", err
 	}
 
-	return versions, nil
+	return version, nil
 }
