@@ -53,6 +53,9 @@ pvm install 3.91.1 --use
 # Switch to an installed version
 pvm use 3.91.1
 
+# Switch and install a version
+pvm use --install 3.91.1
+
 # List installed versions
 pvm list
 
