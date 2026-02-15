@@ -13,9 +13,10 @@ import (
 
 // Exported variables for testing
 var (
-	InstallVersion   = installVersion
-	UseVersion       = useVersion
-	GetLatestVersion = getLatestVersion
+	InstallVersion         = installVersion
+	UseVersion             = useVersion
+	GetLatestVersion       = getLatestVersion
+	githubLatestReleaseURL = "https://api.github.com/repos/pulumi/pulumi/releases/latest"
 )
 
 // GetInstalledVersions returns a map of installed versions
@@ -159,11 +160,15 @@ func installVersion(version string) error {
 }
 
 func getLatestVersion() (string, error) {
-	resp, err := http.Get("https://api.github.com/repos/pulumi/pulumi/releases/latest")
+	resp, err := http.Get(githubLatestReleaseURL)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
+	}
 
 	var release struct {
 		TagName string `json:"tag_name"`
