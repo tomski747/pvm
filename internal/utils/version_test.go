@@ -87,9 +87,9 @@ func TestGetLatestVersion(t *testing.T) {
 	defer server.Close()
 
 	// Override GitHub API URL for testing
-	originalURL := "https://api.github.com"
-	githubAPIURL = server.URL
-	defer func() { githubAPIURL = originalURL }()
+	originalURL := githubLatestReleaseURL
+	githubLatestReleaseURL = server.URL + "/repos/pulumi/pulumi/releases/latest"
+	defer func() { githubLatestReleaseURL = originalURL }()
 
 	// Test getting latest version
 	version, err := GetLatestVersion()
@@ -97,7 +97,7 @@ func TestGetLatestVersion(t *testing.T) {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
-	expectedVersion := "3.142.0"
+	expectedVersion := "3.78.1"
 	if version != expectedVersion {
 		t.Errorf("Expected version %s, got %s", expectedVersion, version)
 	}
