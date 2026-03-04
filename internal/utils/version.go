@@ -11,15 +11,17 @@ import (
 	"github.com/tomski747/pvm/internal/config"
 )
 
-// Exported variables for testing
+// Function variables allow tests to inject mocks without build tags.
 var (
 	InstallVersion         = installVersion
 	UseVersion             = useVersion
 	GetLatestVersion       = getLatestVersion
+	ResolveVersion         = resolveVersion
+	GetAvailableVersions   = getAvailableVersions
 	githubLatestReleaseURL = "https://api.github.com/repos/pulumi/pulumi/releases/latest"
 )
 
-// GetInstalledVersions returns a map of installed versions
+// GetInstalledVersions returns a map of installed versions.
 func GetInstalledVersions() map[string]bool {
 	installed := make(map[string]bool)
 	versionsPath := config.GetVersionsPath()
@@ -38,7 +40,7 @@ func GetInstalledVersions() map[string]bool {
 	return installed
 }
 
-// GetCurrentVersion returns the currently active version
+// GetCurrentVersion returns the currently active version.
 func GetCurrentVersion() (string, error) {
 	binPath := filepath.Join(config.GetBinPath(), config.PulumiBinary)
 	linkTarget, err := os.Readlink(binPath)
@@ -49,8 +51,7 @@ func GetCurrentVersion() (string, error) {
 		return "", err
 	}
 
-	// Extract version from the symlink path
-	// Path format is ~/.pvm/versions/<version>/pulumi
+	// Extract version from the symlink path: ~/.pvm/versions/<version>/pulumi
 	parts := strings.Split(linkTarget, string(filepath.Separator))
 	for i, part := range parts {
 		if part == config.VersionsDir && i+1 < len(parts) {
@@ -61,14 +62,12 @@ func GetCurrentVersion() (string, error) {
 	return "", nil
 }
 
-// UseVersion switches to a specific version of Pulumi
 func useVersion(version string) error {
 	resolvedVersion, err := ResolveVersion(version)
 	if err != nil {
 		return err
 	}
 
-	// Verify version is installed
 	versionsPath := config.GetVersionsPath()
 	versionDir := filepath.Join(versionsPath, resolvedVersion)
 	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
@@ -97,16 +96,15 @@ func useVersion(version string) error {
 		}
 	}
 
-	// Create new symlinks
-	versionBinDir := filepath.Join(versionDir)
-	binFiles, err := os.ReadDir(versionBinDir)
+	// Create new symlinks for every file in the version directory
+	binFiles, err := os.ReadDir(versionDir)
 	if err != nil {
 		return fmt.Errorf("failed to read version directory: %v", err)
 	}
 
 	for _, file := range binFiles {
 		if !file.IsDir() {
-			sourcePath := filepath.Join(versionBinDir, file.Name())
+			sourcePath := filepath.Join(versionDir, file.Name())
 			symlinkPath := filepath.Join(binPath, file.Name())
 
 			if err := os.Symlink(sourcePath, symlinkPath); err != nil {
@@ -118,7 +116,6 @@ func useVersion(version string) error {
 	return nil
 }
 
-// InstallVersion installs a specific version of Pulumi
 func installVersion(version string) error {
 	resolvedVersion, err := ResolveVersion(version)
 	if err != nil {
@@ -136,23 +133,20 @@ func installVersion(version string) error {
 		return fmt.Errorf("failed to create version directory: %v", err)
 	}
 
-	// Determine download URL based on platform
-	var downloadURL string
-
-	// Convert amd64 to x64
+	// Pulumi's release naming uses "x64" instead of "amd64"
 	if arch == "amd64" {
 		arch = "x64"
 	}
 
+	var downloadURL string
 	if goos == "windows" {
 		downloadURL = fmt.Sprintf(config.GithubZipURL, resolvedVersion, resolvedVersion, goos, arch)
 	} else {
 		downloadURL = fmt.Sprintf(config.GithubReleaseURL, resolvedVersion, resolvedVersion, goos, arch)
 	}
 
-	// Download and extract
 	if err := downloadAndExtract(downloadURL, versionDir, goos == "windows"); err != nil {
-		os.RemoveAll(versionDir) // Clean up on failure
+		os.RemoveAll(versionDir) // clean up partial download
 		return fmt.Errorf("failed to download and extract: %v", err)
 	}
 
@@ -181,9 +175,8 @@ func getLatestVersion() (string, error) {
 	return strings.TrimPrefix(release.TagName, "v"), nil
 }
 
-// RemoveVersion removes a specific version of Pulumi
+// RemoveVersion removes a specific version of Pulumi.
 func RemoveVersion(version string) error {
-	// Check if version is currently in use
 	current, err := GetCurrentVersion()
 	if err != nil {
 		return fmt.Errorf("failed to check current version: %w", err)
@@ -195,12 +188,10 @@ func RemoveVersion(version string) error {
 	versionsPath := config.GetVersionsPath()
 	versionDir := filepath.Join(versionsPath, version)
 
-	// Check if version exists
 	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
 		return fmt.Errorf("version %s is not installed", version)
 	}
 
-	// Remove the version directory
 	if err := os.RemoveAll(versionDir); err != nil {
 		return fmt.Errorf("failed to remove version %s: %w", version, err)
 	}
@@ -208,30 +199,23 @@ func RemoveVersion(version string) error {
 	return nil
 }
 
-// GetAvailableVersions fetches all available Pulumi versions from GitHub
-func GetAvailableVersions(refresh bool) ([]string, error) {
+func getAvailableVersions(refresh bool) ([]string, error) {
 	return FetchGitHubReleases(refresh)
 }
 
-// ResolveVersion takes a version or version prefix and returns the full version
-func ResolveVersion(versionOrPrefix string) (string, error) {
+func resolveVersion(versionOrPrefix string) (string, error) {
 	versions, err := FetchGitHubReleases(false)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch versions: %v", err)
 	}
 
-	// If it's an exact version, return it
+	// Exact match first
 	for _, v := range versions {
 		if v == versionOrPrefix {
 			return versionOrPrefix, nil
 		}
 	}
 
-	// Try to find the latest matching version
-	version, err := FindLatestMatchingVersion(versionOrPrefix, versions)
-	if err != nil {
-		return "", err
-	}
-
-	return version, nil
+	// Fall back to prefix match
+	return FindLatestMatchingVersion(versionOrPrefix, versions)
 }

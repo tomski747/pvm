@@ -1,0 +1,40 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - godot
+    - misspell
+
+  settings:
+    errcheck:
+      exclude-functions:
+        # Writing to cobra output never fails in practice.
+        - "fmt.Fprintf"
+        - "fmt.Fprintln"
+        - "fmt.Printf"
+        - "fmt.Println"
+        # Deferred cleanup calls where errors cannot be meaningfully handled.
+        - "(*os.File).Close"
+        - "(*compress/gzip.Reader).Close"
+        - "(*archive/zip.ReadCloser).Close"
+        - "(io.ReadCloser).Close"
+        - "(io.Closer).Close"
+        - "os.Remove"
+        - "os.RemoveAll"
+
+    godot:
+      scope: declarations
+
+  exclusions:
+    rules:
+      - path: "_test\\.go"
+        linters:
+          - godot

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/tomski747/pvm/internal/utils"
 )
@@ -18,7 +19,7 @@ var removeCmd = &cobra.Command{
 			return fmt.Errorf("failed to remove version %s: %w", version, err)
 		}
 
-		fmt.Printf("Successfully removed Pulumi %s\n", version)
+		fmt.Fprintf(cmd.OutOrStdout(), "Successfully removed Pulumi %s\n", version)
 		return nil
 	},
 }

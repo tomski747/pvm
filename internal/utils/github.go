@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -18,28 +17,25 @@ type githubRelease struct {
 	TagName string `json:"tag_name"`
 }
 
-// For testing purposes, this can be overridden
+// githubAPIURL can be overridden in tests.
 var githubAPIURL = "https://api.github.com/repos/pulumi/pulumi/releases"
 
-// FetchGitHubReleases fetches all available Pulumi versions from GitHub
+// FetchGitHubReleases fetches all available Pulumi versions from GitHub.
 func FetchGitHubReleases(refresh bool) ([]string, error) {
 	// If refresh is true, skip cache and fetch directly from GitHub
 	if !refresh {
-		// Try cache first
 		if versions, err := readCache(); err == nil {
 			return versions, nil
 		}
 	}
 
-	// Fetch from GitHub
 	versions, err := fetchFromGitHub()
 	if err != nil {
 		return nil, err
 	}
 
-	// Save to cache
 	if err := saveCache(versions); err != nil {
-		fmt.Printf("Warning: Failed to save cache: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Warning: Failed to save cache: %v\n", err)
 	}
 
 	return versions, nil
@@ -70,19 +66,8 @@ func saveCache(versions []string) error {
 		Timestamp: time.Now(),
 	}
 
-	// Sort versions in descending order using semver comparison
 	sort.Slice(cache.Versions, func(i, j int) bool {
-		v1Parts := strings.Split(cache.Versions[i], ".")
-		v2Parts := strings.Split(cache.Versions[j], ".")
-		
-		for k := 0; k < len(v1Parts) && k < len(v2Parts); k++ {
-			n1, _ := strconv.Atoi(v1Parts[k])
-			n2, _ := strconv.Atoi(v2Parts[k])
-			if n1 != n2 {
-				return n1 > n2
-			}
-		}
-		return len(v1Parts) > len(v2Parts)
+		return SemverGreater(cache.Versions[i], cache.Versions[j])
 	})
 
 	data, err := json.Marshal(cache)
@@ -100,7 +85,7 @@ func saveCache(versions []string) error {
 
 func fetchFromGitHub() ([]string, error) {
 	client := &http.Client{}
-	versions := []string{}
+	var versions []string
 	page := 1
 	perPage := 100
 
@@ -135,8 +120,7 @@ func fetchFromGitHub() ([]string, error) {
 			versions = append(versions, strings.TrimPrefix(release.TagName, "v"))
 		}
 
-		linkHeader := resp.Header.Get("Link")
-		if !strings.Contains(linkHeader, `rel="next"`) {
+		if !strings.Contains(resp.Header.Get("Link"), `rel="next"`) {
 			break
 		}
 
@@ -146,23 +130,18 @@ func fetchFromGitHub() ([]string, error) {
 	return versions, nil
 }
 
-// FindLatestMatchingVersion finds the latest version that matches the given prefix
+// FindLatestMatchingVersion finds the latest version that matches the given prefix.
 func FindLatestMatchingVersion(prefix string, versions []string) (string, error) {
 	if prefix == "" {
 		return "", fmt.Errorf("version prefix cannot be empty")
 	}
 
-	// Normalize prefix to ensure it has dots
 	parts := strings.Split(prefix, ".")
-	if len(parts) == 1 {
-		// For single number like "3", match any version starting with "3."
-		prefix = parts[0]
-	}
 
 	var matchingVersions []string
 	for _, version := range versions {
 		if len(parts) == 1 {
-			// For single number like "3", match any version starting with "3."
+			// For a single segment like "3", match any version starting with "3."
 			if strings.HasPrefix(version+".", parts[0]+".") {
 				matchingVersions = append(matchingVersions, version)
 			}
@@ -178,19 +157,8 @@ func FindLatestMatchingVersion(prefix string, versions []string) (string, error)
 		return "", fmt.Errorf("no versions found matching prefix %s", prefix)
 	}
 
-	// Sort versions using semver comparison
 	sort.Slice(matchingVersions, func(i, j int) bool {
-		v1Parts := strings.Split(matchingVersions[i], ".")
-		v2Parts := strings.Split(matchingVersions[j], ".")
-		
-		for k := 0; k < len(v1Parts) && k < len(v2Parts); k++ {
-			n1, _ := strconv.Atoi(v1Parts[k])
-			n2, _ := strconv.Atoi(v2Parts[k])
-			if n1 != n2 {
-				return n1 > n2
-			}
-		}
-		return len(v1Parts) > len(v2Parts)
+		return SemverGreater(matchingVersions[i], matchingVersions[j])
 	})
 
 	return matchingVersions[0], nil
