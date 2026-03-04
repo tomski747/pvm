@@ -79,19 +79,29 @@ func extractTarGz(r io.Reader, destDir string) error {
 			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 				return fmt.Errorf("failed to create directory: %v", err)
 			}
-			outFile, err := os.Create(path)
-			if err != nil {
-				return fmt.Errorf("failed to create file: %v", err)
-			}
-			if _, err := io.Copy(outFile, tr); err != nil {
-				outFile.Close()
-				return fmt.Errorf("failed to write file: %v", err)
-			}
-			outFile.Close()
-			if err := os.Chmod(path, 0755); err != nil {
-				return fmt.Errorf("failed to set permissions: %v", err)
+			if err := writeFile(path, tr); err != nil {
+				return err
 			}
 		}
+	}
+	return nil
+}
+
+// writeFile creates path and copies content from r into it, then chmods it executable.
+func writeFile(path string, r io.Reader) error {
+	outFile, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	_, copyErr := io.Copy(outFile, r)
+	if closeErr := outFile.Close(); closeErr != nil && copyErr == nil {
+		return fmt.Errorf("failed to close file: %v", closeErr)
+	}
+	if copyErr != nil {
+		return fmt.Errorf("failed to write file: %v", copyErr)
+	}
+	if err := os.Chmod(path, 0755); err != nil {
+		return fmt.Errorf("failed to set permissions: %v", err)
 	}
 	return nil
 }
@@ -139,26 +149,16 @@ func extractZip(r io.Reader, destDir string) error {
 			return fmt.Errorf("failed to create directory: %v", err)
 		}
 
-		outFile, err := os.Create(path)
-		if err != nil {
-			return fmt.Errorf("failed to create file: %v", err)
-		}
-
 		rc, err := file.Open()
 		if err != nil {
-			outFile.Close()
 			return fmt.Errorf("failed to open zip entry: %v", err)
 		}
-
-		_, err = io.Copy(outFile, rc)
-		rc.Close()
-		outFile.Close()
-		if err != nil {
-			return fmt.Errorf("failed to write file: %v", err)
+		if err := writeFile(path, rc); err != nil {
+			_ = rc.Close()
+			return err
 		}
-
-		if err := os.Chmod(path, 0755); err != nil {
-			return fmt.Errorf("failed to set permissions: %v", err)
+		if err := rc.Close(); err != nil {
+			return fmt.Errorf("failed to close zip entry: %v", err)
 		}
 	}
 	return nil

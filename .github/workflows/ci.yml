@@ -18,10 +18,10 @@ jobs:
           go-version: "1.21"
           cache: true
 
-      - name: Install golangci-lint
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v2.5.0
           args: --timeout=5m
 
   test:

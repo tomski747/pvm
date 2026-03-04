@@ -8,7 +8,7 @@ import (
 
 var (
 	useColor = true
-	// Define colors
+	// Color printer functions used across all commands.
 	Success = color.New(color.FgGreen).SprintfFunc()
 	Info    = color.New(color.FgCyan).SprintfFunc()
 	Warning = color.New(color.FgYellow).SprintfFunc()

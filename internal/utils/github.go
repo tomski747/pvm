@@ -17,10 +17,10 @@ type githubRelease struct {
 	TagName string `json:"tag_name"`
 }
 
-// For testing purposes, this can be overridden
+// githubAPIURL can be overridden in tests.
 var githubAPIURL = "https://api.github.com/repos/pulumi/pulumi/releases"
 
-// FetchGitHubReleases fetches all available Pulumi versions from GitHub
+// FetchGitHubReleases fetches all available Pulumi versions from GitHub.
 func FetchGitHubReleases(refresh bool) ([]string, error) {
 	// If refresh is true, skip cache and fetch directly from GitHub
 	if !refresh {
@@ -130,7 +130,7 @@ func fetchFromGitHub() ([]string, error) {
 	return versions, nil
 }
 
-// FindLatestMatchingVersion finds the latest version that matches the given prefix
+// FindLatestMatchingVersion finds the latest version that matches the given prefix.
 func FindLatestMatchingVersion(prefix string, versions []string) (string, error) {
 	if prefix == "" {
 		return "", fmt.Errorf("version prefix cannot be empty")

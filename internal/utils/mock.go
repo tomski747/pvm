@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-// Mock function types
+// Mock function types.
 type (
 	mockInstallVersionFunc      func(version string) error
 	mockUseVersionFunc          func(version string) error
@@ -13,7 +13,7 @@ type (
 	mockGetAvailableVersionFunc func(refresh bool) ([]string, error)
 )
 
-// Mock function variables – set these in tests before calling Execute/RunE.
+// Mock function variables - set these in tests before calling Execute/RunE.
 var (
 	mockInstallVersionFn      mockInstallVersionFunc
 	mockUseVersionFn          mockUseVersionFunc

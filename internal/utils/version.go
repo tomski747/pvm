@@ -21,7 +21,7 @@ var (
 	githubLatestReleaseURL = "https://api.github.com/repos/pulumi/pulumi/releases/latest"
 )
 
-// GetInstalledVersions returns a map of installed versions
+// GetInstalledVersions returns a map of installed versions.
 func GetInstalledVersions() map[string]bool {
 	installed := make(map[string]bool)
 	versionsPath := config.GetVersionsPath()
@@ -40,7 +40,7 @@ func GetInstalledVersions() map[string]bool {
 	return installed
 }
 
-// GetCurrentVersion returns the currently active version
+// GetCurrentVersion returns the currently active version.
 func GetCurrentVersion() (string, error) {
 	binPath := filepath.Join(config.GetBinPath(), config.PulumiBinary)
 	linkTarget, err := os.Readlink(binPath)
@@ -175,7 +175,7 @@ func getLatestVersion() (string, error) {
 	return strings.TrimPrefix(release.TagName, "v"), nil
 }
 
-// RemoveVersion removes a specific version of Pulumi
+// RemoveVersion removes a specific version of Pulumi.
 func RemoveVersion(version string) error {
 	current, err := GetCurrentVersion()
 	if err != nil {

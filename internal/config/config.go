@@ -18,29 +18,30 @@ const (
 	CacheTTL         = 24 * time.Hour
 )
 
+// ReleaseCache holds cached GitHub release data.
 type ReleaseCache struct {
 	Versions  []string  `json:"versions"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// TestConfig holds configuration for testing
+// TestConfig holds configuration overrides used during testing.
 type TestConfig struct {
 	PVMPath string
 }
 
 var testConfig *TestConfig
 
-// SetTestConfig sets the test configuration
+// SetTestConfig sets the test configuration.
 func SetTestConfig(cfg *TestConfig) {
 	testConfig = cfg
 }
 
-// ResetConfig resets the test configuration
+// ResetConfig resets the test configuration.
 func ResetConfig() {
 	testConfig = nil
 }
 
-// GetHomeDir returns the user's home directory
+// GetHomeDir returns the user's home directory.
 func GetHomeDir() string {
 	if testConfig != nil {
 		return testConfig.PVMPath
@@ -65,17 +66,17 @@ func GetPVMPath() string {
 	return filepath.Join(GetHomeDir(), PVMDir)
 }
 
-// GetVersionsPath returns the versions directory path
+// GetVersionsPath returns the versions directory path.
 func GetVersionsPath() string {
 	return filepath.Join(GetPVMPath(), VersionsDir)
 }
 
-// GetBinPath returns the bin directory path
+// GetBinPath returns the bin directory path.
 func GetBinPath() string {
 	return filepath.Join(GetPVMPath(), BinDir)
 }
 
-// GetPlatformInfo returns the current OS and architecture
+// GetPlatformInfo returns the current OS and architecture.
 func GetPlatformInfo() (string, string) {
 	return runtime.GOOS, runtime.GOARCH
 }

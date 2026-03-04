@@ -125,7 +125,7 @@ func TestListCommandSortOrder(t *testing.T) {
 		t.Fatalf("versions missing from output: %s", out)
 	}
 	// Descending order: 3.100.0 > 3.78.1 > 3.77.0
-	if !(pos100 < pos78 && pos78 < pos77) {
+	if pos100 >= pos78 || pos78 >= pos77 {
 		t.Errorf("versions not in descending order; positions: 3.100.0=%d, 3.78.1=%d, 3.77.0=%d\noutput:\n%s",
 			pos100, pos78, pos77, out)
 	}
