@@ -35,7 +35,7 @@ func FetchGitHubReleases(refresh bool) ([]string, error) {
 	}
 
 	if err := saveCache(versions); err != nil {
-		fmt.Printf("Warning: Failed to save cache: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Warning: Failed to save cache: %v\n", err)
 	}
 
 	return versions, nil
