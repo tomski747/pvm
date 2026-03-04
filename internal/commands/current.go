@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/tomski747/pvm/internal/utils"
 )
@@ -17,11 +18,11 @@ var currentCmd = &cobra.Command{
 		}
 
 		if version == "" {
-			fmt.Println("No Pulumi version currently selected. Use 'pvm use <version>' to select one.")
+			fmt.Fprintln(cmd.OutOrStdout(), "No Pulumi version currently selected. Use 'pvm use <version>' to select one.")
 			return nil
 		}
 
-		fmt.Printf("Current Pulumi version: %s\n", version)
+		fmt.Fprintf(cmd.OutOrStdout(), "Current Pulumi version: %s\n", version)
 		return nil
 	},
 }

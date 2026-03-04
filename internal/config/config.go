@@ -52,10 +52,15 @@ func GetHomeDir() string {
 	return home
 }
 
-// GetPVMPath returns the PVM root directory path
+// GetPVMPath returns the PVM root directory path.
+// The PVM_HOME environment variable overrides the default ~/.pvm location,
+// which is useful for integration testing and custom installations.
 func GetPVMPath() string {
 	if testConfig != nil {
 		return testConfig.PVMPath
+	}
+	if pvmHome := os.Getenv("PVM_HOME"); pvmHome != "" {
+		return pvmHome
 	}
 	return filepath.Join(GetHomeDir(), PVMDir)
 }

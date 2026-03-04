@@ -12,10 +12,10 @@ var versionCmd = &cobra.Command{
 	Short: "Print pvm version",
 	Long:  `Print the version information of pvm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s\n", config.Version)
+		fmt.Fprintln(cmd.OutOrStdout(), config.Version)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
-} 
+}
